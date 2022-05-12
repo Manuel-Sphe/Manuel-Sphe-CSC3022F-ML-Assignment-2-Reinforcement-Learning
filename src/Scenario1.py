@@ -3,14 +3,36 @@ from FourRooms import FourRooms
 import random
 
 
+def getMove(state:(int))->int:
+    
+    poss_Mov = Possible_Move(state)
+    actS = Moves(state,poss_Mov)
+    print(f'possible actions {poss_Mov}')
+    index = random.randint(0,len(actS)-1)
+    
+    
+    
+    
+    return actS[index]
+    
+
 # returns a list of possible coordinates you can locate to 
 def Possible_Move(state):
     moves =[]
+    
+    wall1 = [(6,i) for i in range(1,12) if (i!=3 and i != 10)] # vertical wall with 2 doors 
+
+    wall2 = [(i,6) for i in range(1,6) if i!=2] # left-innner horinontal wall
+
+    wall3 = [(i,7) for i in range(7,12) if i!=9] # right inner horizontal wall 
+
+    wall = wall1 + wall2 + wall3
+    
     x_axis = [-1,1,0,0]
     y_axis = [0,0,-1,1]
     x, y =state
     for i in range(4):
-        if x+x_axis[i]<12 and y+y_axis[i]<12:
+        if (x+x_axis[i]<12 and y+y_axis[i]<12) and (x+x_axis[i]>0 and y+y_axis[i]>0) and (x+x_axis[i],y+y_axis[i]) not in wall:
             moves.append((x+x_axis[i],y+y_axis[i]))
             
     return moves     
@@ -56,10 +78,6 @@ def main():
     
     initial = fourRoomsObj.getPosition()
     
-    pos_moves = Possible_Move(initial)
-    
-    actSeletions = Moves(initial,pos_moves)
-    
     
     print('Agent starts at: {0}'.format(initial))
     
@@ -67,11 +85,23 @@ def main():
     
     
     # select the random action from the actions (Exploration) 
+    action = getMove(initial)
+   
+    print(f'start {initial}')
+    
+    gridType, newPos, packagesRemaining, isTerminal = fourRoomsObj.takeAction(action)
+    
+    print(f'new {newPos}')
     
     
+   # while is not isTerminal:
+        
+        
+  
+        
     
-    for i in range(1,10001):
-        pass
+    
+
     
 
     for act in actSeq:
