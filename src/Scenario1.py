@@ -1,108 +1,66 @@
-import numpy as np
 from FourRooms import FourRooms
-import random
+import numpy as np
 
 
-def getMove(state:(int))->int:
-    
-    poss_Mov = Possible_Move(state)
-    actS = Moves(state,poss_Mov)
-    print(f'possible actions {poss_Mov}')
-    index = random.randint(0,len(actS)-1)
-    
-    
-    
-    
-    return actS[index]
-    
+# 12  x 12 is the size of the enviroment and we have 4 possible actions per state 
 
-# returns a list of possible coordinates you can locate to 
-def Possible_Move(state):
-    moves =[]
-    
-    wall1 = [(6,i) for i in range(1,12) if (i!=3 and i != 10)] # vertical wall with 2 doors 
-
-    wall2 = [(i,6) for i in range(1,6) if i!=2] # left-innner horinontal wall
-
-    wall3 = [(i,7) for i in range(7,12) if i!=9] # right inner horizontal wall 
-
-    wall = wall1 + wall2 + wall3
-    
-    x_axis = [-1,1,0,0]
-    y_axis = [0,0,-1,1]
-    x, y =state
-    for i in range(4):
-        if (x+x_axis[i]<12 and y+y_axis[i]<12) and (x+x_axis[i]>0 and y+y_axis[i]>0) and (x+x_axis[i],y+y_axis[i]) not in wall:
-            moves.append((x+x_axis[i],y+y_axis[i]))
-            
-    return moves     
-
-# given possible states to go, get a Array of moves eg. [LEFT, RIGHT, UP, DOWN]
-def Moves(state,actions):
-        
-    acts = []
-    first  = np.array(state)
-        
-        
-    for action in actions:
-        sec = np.array(action)
-            
-        res = first - sec
-            
-        if (res == np.array([1,0])).all():
-            acts.append(1) # DOWN
-        elif (res == np.array([-1,0])).all():
-            acts.append(0) # UP
-        elif (res == np.array([0,1])).all():
-            acts.append(3) # RIGHT
-        elif (res == np.array([0,-1])).all():
-            acts.append(2) # LEFT
-    
-    
-    return acts
+Q_table = np.zeros((144,4),dtype=float)
+R = np.zeros((144,4),dtype=int)
 
 
+directions = np.array([[0,-1],[0,1],[-1,0],[1,0]]) # UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 
+
+# for getting a listf of possible moves given a state 
+def Possible_Move(state: int) -> [int] :
+    """
+    given a state get all the possible actions you can take on that state 
+    to transition to a new state , a state can have a minimum of 2 to a muximum of 4 possible actions 
+    returns a list of actions
+    """
+    
+    actSeq = []
+    for i,value in enumerate(R[state]):
+        if value !=-1 :
+            actSeq.append(i)
+    return actSeq
+
+# for moving from one state to a new state given (state,action)
+def Move(state:int ,action: int) -> int:
+    
+    x,y = state%12, state//12 # get the coordinates given a state 
+    
+    new_state = [x,y] + directions[action]
+    
+    new_state = np.array(new_state) # make this a numpy array
+    
+    return new_state[1]*12 + new_state[0] # the new state s'
+    
+    
+def Reward() -> np.array([[int]]) :
+    
+    
+    
+    
+    pass
 def main():
 
     # Create FourRooms Object
     fourRoomsObj = FourRooms('simple')
 
     # This will try to draw a zero
+
+    """
     actSeq = [FourRooms.LEFT, FourRooms.LEFT, FourRooms.LEFT,
-              FourRooms.UP, FourRooms.UP, FourRooms.UP,
-              FourRooms.RIGHT, FourRooms.RIGHT, FourRooms.RIGHT,
-              FourRooms.DOWN, FourRooms.DOWN, FourRooms.DOWN]
+            FourRooms.UP, FourRooms.UP, FourRooms.UP,
+            FourRooms.RIGHT, FourRooms.RIGHT, FourRooms.RIGHT,
+            FourRooms.DOWN, FourRooms.DOWN, FourRooms.DOWN]
+
+
 
     aTypes = ['UP', 'DOWN', 'LEFT', 'RIGHT']
     gTypes = ['EMPTY', 'RED', 'GREEN', 'BLUE']
-    
-    initial = fourRoomsObj.getPosition()
-    
-    
-    print('Agent starts at: {0}'.format(initial))
-    
-    Possible_Move(fourRoomsObj.getPosition())
-    
-    
-    # select the random action from the actions (Exploration) 
-    action = getMove(initial)
-   
-    print(f'start {initial}')
-    
-    gridType, newPos, packagesRemaining, isTerminal = fourRoomsObj.takeAction(action)
-    
-    print(f'new {newPos}')
-    
-    
-   # while is not isTerminal:
-        
-        
-  
-        
-    
-    
 
-    
+    print('Agent starts at: {0}'.format(fourRoomsObj.getPosition()))
 
     for act in actSeq:
         gridType, newPos, packagesRemaining, isTerminal = fourRoomsObj.takeAction(act)
@@ -116,11 +74,12 @@ def main():
 
     # Don't forget to call newEpoch when you start a new simulation run
 
+
     # Show Path
     fourRoomsObj.showPath(-1)
+    """
+  
 
 
 if __name__ == "__main__":
     main()
-
-
