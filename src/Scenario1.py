@@ -1,3 +1,4 @@
+from multiprocessing.spawn import old_main_modules
 from operator import ne
 from FourRooms import FourRooms
 import numpy as np
@@ -62,10 +63,16 @@ def Populate_R() -> np.array([[int]]) :
     
     
 def inner_walls_R(old_state:int,new_state:int, action:int,grid_cell:int)->int:
+    res = None
+    if old_state == new_state: # if hits the inner wall 
+        R[new_state,action] = -1 # punish the agent
+        res = R[old_state,action]
+    else:
+        R[old_state,action] = grid_cell
+        res = R[old_state,action] + 1 # reward with 1
     
-    if old_state == new_state:
+    return res
         
-    pass
 def main():
 
     # Create FourRooms Object
