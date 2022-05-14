@@ -1,4 +1,6 @@
+from optparse import Option
 import random
+from shutil import move
 from FourRooms import FourRooms
 import numpy as np
 
@@ -60,10 +62,10 @@ def Populate_R() -> np.array([[int]]) :
         
         actSeq =[
             
-            [x,y-1 if (y-1>=0 and  y-1< 12) else -1], # UP 
-            [x, y+1 if( y+1>=0 and y+1 < 12) else -1], # DOWN
-            [x-1 if (x-1>=0 and x-1<12) else -1,y], # LEFT 
-            [x+1 if(x+1>=0 and x+1<12) else -1 ,y], # RIGHT
+        (x,y-1 if (y-1>=0 and  y-1< 12) else -1), # UP 
+            (x, y+1 if( y+1>=0 and y+1 < 12) else -1), # DOWN
+            (x-1 if (x-1>=0 and x-1<12) else -1,y), # LEFT 
+            (x+1 if(x+1>=0 and x+1<12) else -1 ,y), # RIGHT
         ]
                 
         for i,val in enumerate(actSeq):
@@ -80,9 +82,10 @@ def inner_walls_R(old_state:int,new_state:int, action:int,grid_cell:int)->int:
         R[old_state,action] = grid_cell
         return R[old_state,action] + 1 # reward with 1
     
-def Learning_Q(visits:np.array([[int]]),discout:int = 0.8) -> int:
+def Learning_Q(visits:np.array([[int]]),discout:int = 0.89):
         x,y = fourRoomsObj.getPosition()
         #print(x,y)
+      
         state = y*12 + x # convert to 1D state 
        # print(f'state {state}')
         done = False
@@ -95,7 +98,8 @@ def Learning_Q(visits:np.array([[int]]),discout:int = 0.8) -> int:
             if random.random() < epsilon:
                 action = state_action[np.random.randint(0, len(state_action))]
             else:
-                action = Q_table[state,:].argmax(0)
+                action = np.max(Q_table[state])
+               
             #print('action',action)
             #next_state = Move(state,action)
             
@@ -114,25 +118,43 @@ def Learning_Q(visits:np.array([[int]]),discout:int = 0.8) -> int:
 
             done = isTerminal         
             state = current_pos[1]*12 + current_pos[0]
-            
       
-            
+        
+         
+def Exploit():
+    
+    x,y = fourRoomsObj.getPosition()
+    done  =  False 
+    state = y*11 + x
+    
+    while not done:
+        action = np.argmax(Q_table[state])
+        
+        gridCell,current_poss,_,isTerminal = fourRoomsObj.takeAction(action)
+
+        state = current_poss[1]*12 + current_poss[0]
+        done = isTerminal
+    
+    fourRoomsObj.showPath(-1)
+        
            
 
                 
 def main():
-    
-   
-
     # Create FourRooms Object
-    
     R = Populate_R()
-    
-    for epoch in range(1,epochs):
+    for _ in range(1,epochs):
         Learning_Q(visits)
         fourRoomsObj.newEpoch()
-    print(Q_table)
-    #print(Q_table[143])
+    
+    for _ in range(epochs):
+        Exploit()
+        fourRoomsObj.newEpoch()
+        
+    
+
+    
+    #fourRoomsObj.showPath(-1)
     
     # Explole 
 
