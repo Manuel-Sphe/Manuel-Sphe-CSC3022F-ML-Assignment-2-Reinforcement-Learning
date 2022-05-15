@@ -17,7 +17,15 @@ epsilon_decay = epochs // 2
 
 directions = np.array([[0,-1],[0,1],[-1,0],[1,0]]) # UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 
 
-
+def Move_3D(package_type:int,state:int)->[int]:
+    actSeq = [] 
+    for action,val in enumerate(R[package_type,state]):
+        
+        if val != -1:
+            actSeq.append(action)
+    return actSeq
+        
+    
 def main():
 
     # Create FourRooms Object
