@@ -1,3 +1,4 @@
+
 from FourRooms import FourRooms
 import random
 import numpy as np
@@ -9,7 +10,7 @@ R = np.zeros((3,144,4),dtype=int)
 epochs = 100
 gamma = 0.8 
 epsilon = 1
-fourRoomsObj = FourRooms('simple')
+fourRoomsObj = FourRooms('multi')
 visits = np.zeros((3,144)) # 
 
 decay = 1
@@ -17,7 +18,7 @@ epsilon_decay = epochs // 2
 
 directions = np.array([[0,-1],[0,1],[-1,0],[1,0]]) # UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 
 
-def Move_3D(package_type:int,state:int)->[int]:
+def Possible_3D_Moves(package_type:int,state:int)->[int]:
     actSeq = [] 
     for action,val in enumerate(R[package_type,state]):
         
@@ -61,12 +62,62 @@ def reward(current_state:int,next_state:int,action:int,package:int,grid_Cell:int
         R[package,current_state,action] = grid_Cell
         return 1.
     
+def Learning_Q_3D(visits:np.array([[int]]),x:int , y:int):
+   
+    #print(x,y)
+      
+    state = y*12 + x # convert to 1D state 
+   # print(f'state {state}')
+    done = False
+    to_collect = fourRoomsObj.getPackagesRemaining()
+    print(f'start packages {to_collect}')
+    package_num = 0 if to_collect == 3 else 1 if to_collect == 2 else 2
+    package_num = 3 - fourRoomsObj.getPackagesRemaining()
+    while package_num != 3  :
+        
+        visits[package_num,state] += 1
+        alpha = 1/visits[package_num,state]
+        
+        state_action = Possible_3D_Moves(package_num,state)
     
+        
+        if random.random() < epsilon:
+            action = state_action[np.random.randint(0, len(state_action))]
+        else:
+            action = np.max(Q_table[package_num,state])
+               
+            
+        gridCell, current_pos , c_num_of_packages, isTerminal = fourRoomsObj.takeAction(action)
+        
+        r = reward(state,current_pos[1]*12 + current_pos[0],action,package_num,gridCell)
+        next_state  = current_pos[1]*12 + current_pos[0]
+        
+        
+        # Update the Q_table      
+        old_value = Q_table[package_num,state, action]
+        next_max = np.max(Q_table[package_num,next_state])
+        
+        new_value = (1 - alpha) * old_value + alpha * (r + gamma * next_max)
+        Q_table[package_num,state, action] = new_value
+
+        
+        state = current_pos[1]*12 + current_pos[0]
+        
+        package_num= 3 - c_num_of_packages
+        
+       
+       # print('left to collect',fourRoomsObj.getPackagesRemaining(), 'package',package_num)
+                  
 def main():
 
-    # Create FourRooms Object
-    fourRoomsObj = FourRooms('multi')
-   
+  
+    X,Y = fourRoomsObj.getPosition()
+    Learning_Q_3D(visits,X,Y)
+    
+    #print(Q_table[0])
+    
+
+    
    
 
 
