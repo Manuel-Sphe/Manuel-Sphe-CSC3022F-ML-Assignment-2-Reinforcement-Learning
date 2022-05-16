@@ -1,4 +1,5 @@
 
+from telnetlib import EC
 from FourRooms import FourRooms
 import random
 import numpy as np
@@ -9,12 +10,10 @@ Q_table = np.zeros((3,144,4),dtype=float)
 R = np.zeros((3,144,4),dtype=int)
 epochs = 100
 gamma = 0.8 
-epsilon = 1
+epsilon = 0.8
 fourRoomsObj = FourRooms('multi')
 visits = np.zeros((3,144)) # 
 
-decay = 1
-epsilon_decay = epochs // 2
 
 directions = np.array([[0,-1],[0,1],[-1,0],[1,0]]) # UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 
 
@@ -55,39 +54,43 @@ def reward(current_state:int,next_state:int,action:int,package:int,grid_Cell:int
     #hitting a wall
     if current_state == next_state:
         R[package,current_state,action]  = -1
-        return -1.
+        return -5.
         
     else:
         
         R[package,current_state,action] = grid_Cell
-        return 1.
+        return 10
     
-def Learning_Q_3D(visits:np.array([[int]]),x:int , y:int):
+def Learning_Q_3D(epoches,visits:np.array([[int]])):
    
     #print(x,y)
-      
+    fourRoomsObj.newEpoch()
+    x,y  = fourRoomsObj.getPosition()
+    global epsilon
     state = y*12 + x # convert to 1D state 
    # print(f'state {state}')
-    done = False
-    to_collect = fourRoomsObj.getPackagesRemaining()
-    print(f'start packages {to_collect}')
-    package_num = 0 if to_collect == 3 else 1 if to_collect == 2 else 2
+    
+    
     package_num = 3 - fourRoomsObj.getPackagesRemaining()
-    while package_num != 3  :
+    
+    done = False
+    while package_num != 3 and not done :
         
         visits[package_num,state] += 1
-        alpha = 1/visits[package_num,state]
+        alpha = 1/(1+ visits[package_num,state])
         
         state_action = Possible_3D_Moves(package_num,state)
     
         
-        if random.random() < epsilon:
+        if random.uniform(0,1) < epsilon:
             action = state_action[np.random.randint(0, len(state_action))]
         else:
-            action = np.max(Q_table[package_num,state])
+            action = np.argmax(Q_table[package_num,state])
                
             
         gridCell, current_pos , c_num_of_packages, isTerminal = fourRoomsObj.takeAction(action)
+        
+        
         
         r = reward(state,current_pos[1]*12 + current_pos[0],action,package_num,gridCell)
         next_state  = current_pos[1]*12 + current_pos[0]
@@ -104,19 +107,60 @@ def Learning_Q_3D(visits:np.array([[int]]),x:int , y:int):
         state = current_pos[1]*12 + current_pos[0]
         
         package_num= 3 - c_num_of_packages
+        done = isTerminal
+
         
-       
+
        # print('left to collect',fourRoomsObj.getPackagesRemaining(), 'package',package_num)
+       
+def Exploit():
+    fourRoomsObj.newEpoch()
+    X,Y = fourRoomsObj.getPosition()
+    state = Y*11 + X  
+    dest = 0  
+    package_num = 0 
+    done = False
+    while package_num != 3 and not done :
+        
+        
+        action=np.argmax(Q_table[package_num,state])
+
+        gridCell, current_pos , c_num_of_packages, isTerminal = fourRoomsObj.takeAction(action)
+                            
+        state = current_pos[1]*12 + current_pos[0]
+        
+        if c_num_of_packages == 0 and dest == 2:
+            dest = 3
+            fourRoomsObj.showPath(-1)
+            print("package 1")
+
+        elif c_num_of_packages == 1 and dest == 1:
+            dest = 2
+            fourRoomsObj.showPath(-1)
+            print("package 2")
+
+        elif c_num_of_packages == 2 and dest == 0:
+            dest = 1
+            fourRoomsObj.showPath(-1)
+            print("package 3")
+
+        fourRoomsObj.showPath(-1)
+                
+        package_num= 3 - c_num_of_packages
+        done =isTerminal
+        
+
                   
 def main():
-
-  
-    X,Y = fourRoomsObj.getPosition()
-    Learning_Q_3D(visits,X,Y)
+    for i in range(1,epochs):
+        Learning_Q_3D(i,visits)
     
-    #print(Q_table[0])
+    print(Q_table[0])
     
-
+    Exploit()
+ 
+    
+    
     
    
 
