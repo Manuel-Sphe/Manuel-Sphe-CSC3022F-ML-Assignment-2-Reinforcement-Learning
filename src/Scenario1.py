@@ -8,18 +8,19 @@ import numpy as np
 global R, directions
 Q_table = np.zeros((144,4),dtype=float)
 R = np.zeros((144,4),dtype=int)
-epochs = 100
+epochs = 500
 gamma = 0.8 
 epsilon = 1
 fourRoomsObj = FourRooms('simple')
 visits = np.zeros(144)
 
-decay = 1
-epsilon_decay = epochs // 2
+
 
 directions = np.array([[0,-1],[0,1],[-1,0],[1,0]]) # UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 
 
-
+start_epsilon_decay = 1
+end_epsilon_decay = epochs // 2
+epsilon_decay_value = epsilon / (end_epsilon_decay - start_epsilon_decay)
 
 def Eploration():
     
@@ -75,6 +76,7 @@ def Populate_R() -> np.array([[int]]) :
     
     
 def inner_walls_R(old_state:int,new_state:int, action:int,grid_cell:int)->int:
+    
     if old_state == new_state: # if hits the inner wall 
         R[new_state,action] = -1 # punish the agent
         return R[old_state,action]
@@ -82,9 +84,13 @@ def inner_walls_R(old_state:int,new_state:int, action:int,grid_cell:int)->int:
         R[old_state,action] = grid_cell
         return R[old_state,action] + 1 # reward with 1
     
-def Learning_Q(visits:np.array([[int]]),discout:int = 0.89):
+def Learning_Q(ep:int,visits:np.array([[int]])):
         x,y = fourRoomsObj.getPosition()
         #print(x,y)
+        
+  
+        
+        global epsilon
       
         state = y*12 + x # convert to 1D state 
        # print(f'state {state}')
@@ -92,16 +98,15 @@ def Learning_Q(visits:np.array([[int]]),discout:int = 0.89):
         
         while not done :
             visits[state] += 1
-            alpha = 1/visits[state]
+            alpha = 1/(1+visits[state])
             state_action = Possible_Move(state)
             
-            if random.random() < epsilon:
+            if random.random() < epsilon: # Explore
                 action = state_action[np.random.randint(0, len(state_action))]
             else:
-                action = np.max(Q_table[state])
-               
-            #print('action',action)
-            #next_state = Move(state,action)
+                action = np.argmax(Q_table[state]) # Explooit 
+            
+           
             
             gridCell, current_pos , gType, isTerminal = fourRoomsObj.takeAction(action)
             
@@ -118,6 +123,10 @@ def Learning_Q(visits:np.array([[int]]),discout:int = 0.89):
 
             done = isTerminal         
             state = current_pos[1]*12 + current_pos[0]
+            
+        if end_epsilon_decay >= ep and ep >= start_epsilon_decay:
+            epsilon -= epsilon_decay_value
+ 
       
         
          
@@ -130,7 +139,7 @@ def Exploit():
     while not done:
         action = np.argmax(Q_table[state])
         
-        gridCell,current_poss,_,isTerminal = fourRoomsObj.takeAction(action)
+        _,current_poss,_,isTerminal = fourRoomsObj.takeAction(action)
 
         state = current_poss[1]*12 + current_poss[0]
         done = isTerminal
@@ -143,13 +152,16 @@ def Exploit():
 def main():
     # Create FourRooms Object
     R = Populate_R()
-    for _ in range(1,epochs):
-        Learning_Q(visits)
+    for i in range(1,epochs):
         fourRoomsObj.newEpoch()
+        Learning_Q(i,visits)
+        
+        
     
-    for _ in range(epochs):
-        Exploit()
-        fourRoomsObj.newEpoch()
+    fourRoomsObj.newEpoch()
+    Exploit()
+  
+
         
     
 
