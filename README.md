@@ -4,32 +4,32 @@ In this Assignment, you will teach RL Agents to pickup packages on a grid-world.
 ## Creating a virtual environment (Windows)
 
 Initialiaze the environment folder:
-```
-$ virtualenv.exe venv
+```bash
+ virtualenv.exe venv
 ```
 
 If virtualenv is not found run
-```
+```bash
 $ pip install virtualenv.exe
 ```
 
 Activate the virtual environment:
-```
+```bash
 $ source venv/Scripts/activate
 ```
 
 ## Creating a virtual environment (MACOS) and Linux to install the venv
 
-```
+```bash
 $ make 
 ```
 #  To Run a Scenario (e.g Scenario1)
-```
-$ make run1
-```
+```bash
+make run1
+```bash
 # Finally to remove the the venv
-```
-$ make clean
+```bash
+make clean
 ```
 
 
