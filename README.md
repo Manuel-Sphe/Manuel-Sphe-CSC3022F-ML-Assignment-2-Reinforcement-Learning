@@ -26,8 +26,9 @@ $ make
 #  To Run a Scenario (e.g Scenario1)
 ```bash
 make run1
-```bash
+```
 # Finally to remove the the venv
+
 ```bash
 make clean
 ```
