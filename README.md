@@ -1,4 +1,5 @@
 # Manuel-Sphe-CSC3022F-ML-Assignment-2-Reinforcement-Learning
+![Machine Learnig](https://imageio.forbes.com/specials-images/dam/imageserve/966248982/960x0.jpg?format=jpg&width=960)
 In this Assignment, you will teach RL Agents to pickup packages on a grid-world. The environment you will be using is called the Four-Rooms domain
 ### I'm gonna add a Jupiter Notebook file for better vision , 
 ### Also `Scenario3.py` and `Scenario4.py` comming soon
